@@ -86,8 +86,8 @@ defmodule Satellite.Passes do
     }
   end
 
-  def current_position(satrec, observer) do
-    predict_for(:calendar.universal_time(), observer, satrec)
+  def current_position(satrec, observer, datetime \\ :calendar.universal_time()) do
+    predict_for(datetime, observer, satrec)
   end
 
   #
