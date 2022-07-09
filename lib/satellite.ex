@@ -6,20 +6,20 @@ defmodule Satellite do
   # Public API
   #
 
-  def list_passes(satrec, count, observer, start_datetime) do
-    Passes.list_passes(satrec, count, observer, start_datetime)
+  def list_passes(satrec, count, observer, start_datetime, pass_opts \\ []) do
+    Passes.list_passes(satrec, count, observer, start_datetime, pass_opts)
   end
 
-  def list_passes_until(satrec, observer, start_datetime, end_datetime) do
-    Passes.list_passes_until(satrec, observer, start_datetime, end_datetime)
+  def list_passes_until(satrec, observer, start_datetime, end_datetime, pass_opts \\ []) do
+    Passes.list_passes_until(satrec, observer, start_datetime, end_datetime, pass_opts)
   end
 
-  def next_pass(satrec, start_datetime, observer) do
-    Passes.next_pass(satrec, start_datetime, observer)
+  def next_pass(satrec, start_datetime, observer, pass_opts \\ []) do
+    Passes.next_pass(satrec, start_datetime, observer, pass_opts)
   end
 
-  def current_position(satrec, observer) do
-    Passes.current_position(satrec, observer)
+  def current_position(satrec, observer, pass_opts \\ []) do
+    Passes.current_position(satrec, observer, :calendar.universal_time(), pass_opts)
   end
 
   #
