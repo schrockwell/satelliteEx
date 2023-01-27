@@ -10,7 +10,7 @@ defmodule Satellite.TLE do
     with {:ok, tle1} <- parse_line1(tle_line_1),
          {:ok, tle2} <- parse_line2(tle_line_2) do
       satrec = %Satrec{}
-      satrec = %{satrec | satnum: String.to_integer(tle1.satellite_number)}
+      satrec = %{satrec | satnum: String.to_integer(String.trim(tle1.satellite_number))}
       satrec = %{satrec | epochyr: tle1.epoch_year}
       satrec = %{satrec | epochdays: tle1.epoch}
       satrec = %{satrec | ndot: tle1.first_deriviative}
