@@ -21,13 +21,28 @@ defmodule Satellite.Passes do
   # PUBLIC
   #
 
+  defp convert_pass_opts(pass_opts) do
+    Enum.map(pass_opts, fn
+      {:search_passes_after, %DateTime{} = date} ->
+        {:search_passes_after, :calendar.datetime_to_gregorian_seconds(date)}
+
+      {:search_passes_before, %DateTime{} = date} ->
+        {:search_passes_before, :calendar.datetime_to_gregorian_seconds(date)}
+
+      other ->
+        other
+    end)
+  end
+
   def list_passes(satrec, count, observer, start_datetime, pass_opts \\ []) when count > 0 do
+    pass_opts = convert_pass_opts(pass_opts)
     first_pass = next_pass(satrec, start_datetime, observer, pass_opts)
     list_passes(satrec, count - 1, observer, first_pass.end_time, [first_pass], pass_opts)
   end
 
   def list_passes_until(satrec, observer, start_datetime, end_datetime, pass_opts \\ [])
       when end_datetime >= start_datetime do
+    pass_opts = convert_pass_opts(pass_opts)
     first_pass = next_pass(satrec, start_datetime, observer, pass_opts)
 
     if first_pass.start_time > end_datetime do
@@ -50,6 +65,7 @@ defmodule Satellite.Passes do
         %{longitude_rad: _, latitude_rad: _, height_km: _} = observer,
         pass_opts \\ []
       ) do
+    pass_opts = convert_pass_opts(pass_opts)
     pass = find_first_pass_for(start_date, observer, satrec, pass_opts)
     start_prediction = predict_for(pass.start_of_pass.datetime, observer, satrec, pass_opts)
     end_prediction = predict_for(pass.end_of_pass.datetime, observer, satrec, pass_opts)
@@ -106,6 +122,7 @@ defmodule Satellite.Passes do
   end
 
   def current_position(satrec, observer, datetime \\ :calendar.universal_time(), pass_opts \\ []) do
+    pass_opts = convert_pass_opts(pass_opts)
     predict_for(datetime, observer, satrec, pass_opts)
   end
 
@@ -303,6 +320,10 @@ defmodule Satellite.Passes do
     new_start_date = increment_date(start_date, coarse_increment(pass_opts))
     prediction = predict_for(new_start_date, observer, satellite_record, magnitude?: false)
 
+    if pass_opts[:search_passes_before] && new_start_date > pass_opts[:search_passes_before] do
+      raise "failed to find a pass"
+    end
+
     first_positive_elevation(
       new_start_date,
       observer,
@@ -352,6 +373,10 @@ defmodule Satellite.Passes do
 
     new_start_date = increment_date(start_date, -fine_increment(pass_opts))
     prediction = predict_for(new_start_date, observer, satellite_record, magnitude?: false)
+
+    if pass_opts[:search_passes_after] && new_start_date < pass_opts[:search_passes_after] do
+      raise "failed to find a pass"
+    end
 
     decrement_to_lowest_elevation(
       new_start_date,
